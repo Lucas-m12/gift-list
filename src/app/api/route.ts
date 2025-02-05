@@ -1,17 +1,28 @@
-import { dbClient } from "@/supabase-client";
+import { prisma } from "@/prisma-client";
+import crypto from "node:crypto";
 
 export const POST = async (request: Request) => {
   const data = await request.json();
-  await dbClient.from("gifts").insert({
-    person: data.name,
-    items: data.selectedItens,
+  await prisma.gifts.create({
+    data: {
+      id: crypto.randomUUID(),
+      person: data.name,
+      items: data.selectedItens,
+    }
   });
   for (const item of data.selectedItens) {
-    const product = await dbClient.from('products').select().eq("id", item.id).single();
-    if (!product.data.shouldRemove) {
+    const product = await prisma.products.findFirst({
+      where: {
+        id: item.id,
+      }
+    })
+    if (!product?.shouldRemove) {
       continue;
     }
-    await dbClient.from('products').update({ isActive: false }).eq("id", item.id);
+    await prisma.products.update({
+      where: { id: item.id },
+      data: { isActive: false }
+    });
   }
   return Response.json({ data });
 }
