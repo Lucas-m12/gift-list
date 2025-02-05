@@ -4,6 +4,10 @@ export const GET = async () => {
   const products = await prisma.products.findMany({
     include: {
       categories: true,
+    },
+    orderBy: {
+      shouldRemove: "asc",
+      name: "asc"
     }
   });
 
