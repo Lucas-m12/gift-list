@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ConfirmationDialog } from "./confirmation-dialog";
 import { ProductsList } from "./products-list";
 
 export default function Home() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [products, setProducts] = useState<{id: string, name: string, categories: string[]}[]>([]);
   const router = useRouter();
 
   const handleItemToggle = useCallback((itemId: string) => {
@@ -18,30 +20,6 @@ export default function Home() {
       prev => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId])
     )
   }, []);
-
-  const categories = [
-    { id: "kitchen", name: "Cozinha" },
-    { id: "bedroom", name: "Quarto" },
-    { id: "living-room", name: "Sala" },
-    { id: "bathroom", name: "Banheiro" },
-  ];
-
-  const products = [
-    { 
-      id: "1", name: "Dinheiro", categories: ["kitchen", "bedroom", "living-room", "bathroom"] 
-    },
-    { id: "2", name: "Espresso Machine", categories: ["kitchen"] },
-    { id: "3", name: "Luxury Bedding Set", categories: ["bedroom"] },
-    { id: "4", name: "Smart Lighting System", categories: ["bedroom"] },
-    { id: "5", name: "Sectional Sofa", categories: ["living-room"] },
-    { id: "6", name: "Smart TV", categories: ["living-room"] },
-    { id: "7", name: "Towel Warmer", categories: ["bathroom", "living-room"] },
-    { id: "8", name: "Rainfall Shower Head", categories: ["bathroom"] },
-    { id: "9", name: "Dining Table Set", categories: ["dining"] },
-    { id: "10", name: "Wine Cooler", categories: ["dining"] },
-    { id: "11", name: "Robot Vacuum", categories: ["living-room"] },
-    { id: "12", name: "Air Purifier", categories: ["bedroom"] },
-  ];
 
   const handleSubmit = async (name: string) => {
     try {
@@ -61,13 +39,26 @@ export default function Home() {
     } catch (error) {
       console.error({error});
     }
-  }
+  };
+
+  useEffect(() => {
+    (async () => {
+      const result = await fetch("/api/get-categories");
+      const data = await result.json();
+      setCategories(data);
+    })()
+  }, []);
+  
+  useEffect(() => {
+    (async () => {
+      const result = await fetch("/api/get-products");
+      const data = await result.json();
+      setProducts(data);
+    })()
+  }, []);
 
   return (
     <section className="bg-white flex flex-col max-h-screen">
-      {/* <header>
-        <div className="logo" />
-      </header> */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">Presentes de casamento ❤️</h1>
         <div className="flex flex-col items-center gap-2 mb-6">
@@ -84,7 +75,7 @@ export default function Home() {
         >
           <Tabs>
             <TabsList 
-              defaultValue={categories[0].id} 
+              defaultValue={categories[0]?.id ?? ""} 
               className="mb-2"
             >
               {
