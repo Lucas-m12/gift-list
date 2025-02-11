@@ -31,11 +31,12 @@ export default function Home() {
         }),
       });
       if (!response.ok) {
-        
+        console.error("error: " + response?.status);
       }
       setSelectedItems([]);
       setIsDialogOpen(false);
-      router.push('/finish');
+      
+      router.refresh();
     } catch (error) {
       console.error({error});
     }

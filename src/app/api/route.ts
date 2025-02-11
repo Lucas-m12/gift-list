@@ -7,10 +7,10 @@ export const POST = async (request: Request) => {
     data: {
       id: crypto.randomUUID(),
       person: data.name,
-      items: data.selectedItens,
+      items: data.selectedItems,
     }
   });
-  for (const item of data.selectedItens) {
+  for (const item of data.selectedItems) {
     const product = await prisma.products.findFirst({
       where: {
         id: item.id,
